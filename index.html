@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Il Calendario Magico - Impara Giorni, Mesi e Stagioni</title>
+
+  <!-- Tailwind CSS per layout responsive -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Canvas Confetti per festeggiare le risposte esatte -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <!-- Font Awesome per le icone -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Font Fredoka -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Fredoka', sans-serif;
+      background: linear-gradient(135deg, #e0f2fe 0%, #fef3c7 50%, #fce7f3 100%);
+      min-height: 100vh;
+      user-select: none;
+    }
+
+    .bounce-hover {
+      transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .bounce-hover:hover {
+      transform: translateY(-3px) scale(1.02);
+    }
+    .bounce-hover:active {
+      transform: translateY(1px) scale(0.97);
+    }
+
+    .card-shadow {
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+    }
+
+    @keyframes pulse-star {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.3); }
+    }
+    .animate-pulse-star {
+      animation: pulse-star 0.5s ease-in-out;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-8px); }
+      40%, 80% { transform: translateX(8px); }
+    }
+    .shake-err {
+      animation: shake 0.4s ease-in-out;
+    }
+  </style>
+</head>
+<body class="p-3 sm:p-6 flex flex-col items-center justify-between min-h-screen">
+
+  <!-- INTESTAZIONE E SCOREBOARD -->
+  <header class="w-full max-w-4xl bg-white/95 backdrop-blur-md rounded-3xl p-4 mb-4 card-shadow border-4 border-amber-300 flex flex-wrap items-center justify-between gap-3">
+    <!-- Titolo / Logo -->
+    <div class="flex items-center gap-3 cursor-pointer" onclick="goToMenu()">
+      <div class="w-12 h-12 bg-amber-400 rounded-2xl flex items-center justify-center text-white text-2xl shadow-md">
+        <i class="fa-solid fa-calendar-star"></i>
+      </div>
+      <div>
+        <h1 class="text-xl sm:text-2xl font-bold text-slate-800 leading-tight">Il Calendario Magico 🌟</h1>
+        <p class="text-xs text-slate-500 font-semibold">Impara giocando!</p>
+      </div>
+    </div>
+
+    <!-- Punteggio e Vite -->
+    <div class="flex items-center gap-3 sm:gap-6 ml-auto">
+      <!-- Pulsante Musica Audio -->
+      <button id="music-btn" onclick="toggleMusic()" title="Attiva/Disattiva Musica" class="bounce-hover bg-slate-100 hover:bg-slate-200 text-slate-700 w-11 h-11 rounded-2xl flex items-center justify-center text-xl border-2 border-slate-300 shadow-sm">
+        <i class="fa-solid fa-volume-xmark" id="music-icon"></i>
+      </button>
+
+      <!-- Vite (Cuoricini) -->
+      <div class="flex flex-col items-end">
+        <span class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider">Vite</span>
+        <div id="lives-container" class="flex gap-1 text-lg sm:text-2xl text-rose-500">
+          <i class="fa-solid fa-heart"></i>
+          <i class="fa-solid fa-heart"></i>
+          <i class="fa-solid fa-heart"></i>
+        </div>
+      </div>
+
+      <!-- Punteggio -->
+      <div class="bg-amber-100 px-3 py-1.5 sm:px-4 sm:py-2 rounded-2xl border-2 border-amber-300 flex items-center gap-2">
+        <i class="fa-solid fa-star text-amber-500 text-xl sm:text-2xl"></i>
+        <div>
+          <div class="text-[10px] sm:text-xs font-bold text-amber-700 uppercase tracking-wider">Punti</div>
+          <div id="score-display" class="text-xl sm:text-2xl font-black text-amber-600 leading-none">0</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTENITORE PRINCIPALE DI GIOCO -->
+  <main class="w-full max-w-4xl flex-grow flex flex-col justify-center my-2">
+    
+    <!-- MENU SELEZIONE MODULI -->
+    <div id="view-menu" class="space-y-6">
+      <div class="text-center">
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-800 mb-1">Cosa vuoi imparare oggi?</h2>
+        <p class="text-slate-600 text-sm font-medium">Scegli un modulo e scopri il mondo del tempo!</p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Modulo 1: I Giorni -->
+        <button onclick="startModule('days')" class="bounce-hover bg-gradient-to-br from-indigo-500 to-indigo-600 text-white rounded-3xl p-5 text-left card-shadow border-b-8 border-indigo-800 flex flex-col justify-between group h-44">
+          <div class="flex justify-between items-start">
+            <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-bold">Modulo 1</span>
+            <div class="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center text-xl group-hover:rotate-12 transition-transform">
+              <i class="fa-solid fa-calendar-day"></i>
+            </div>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold mb-1">I Giorni della Settimana</h3>
+            <p class="text-indigo-100 text-xs">Quale giorno viene prima e dopo?</p>
+          </div>
+        </button>
+
+        <!-- Modulo 2: Mesi e Stagioni -->
+        <button onclick="startModule('seasons')" class="bounce-hover bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-3xl p-5 text-left card-shadow border-b-8 border-teal-800 flex flex-col justify-between group h-44">
+          <div class="flex justify-between items-start">
+            <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-bold">Modulo 2</span>
+            <div class="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center text-xl group-hover:rotate-12 transition-transform">
+              <i class="fa-solid fa-cloud-sun"></i>
+            </div>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold mb-1">Mesi e Stagioni 🎲</h3>
+            <p class="text-emerald-100 text-xs">Abbina i mesi in ordine casuale alle stagioni!</p>
+          </div>
+        </button>
+
+        <!-- Modulo 3: Completa la Parola -->
+        <button onclick="startModule('fillWord')" class="bounce-hover bg-gradient-to-br from-amber-500 to-orange-500 text-white rounded-3xl p-5 text-left card-shadow border-b-8 border-orange-700 flex flex-col justify-between group h-44">
+          <div class="flex justify-between items-start">
+            <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-bold">Modulo 3</span>
+            <div class="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center text-xl group-hover:rotate-12 transition-transform">
+              <i class="fa-solid fa-spell-check"></i>
+            </div>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold mb-1">Completa la Parola 🔤</h3>
+            <p class="text-amber-100 text-xs">Trova le lettere mancanti dei giorni e dei mesi!</p>
+          </div>
+        </button>
+
+        <!-- Modulo 4: Quiz e Intruso -->
+        <button onclick="startModule('quiz')" class="bounce-hover bg-gradient-to-br from-rose-500 to-pink-600 text-white rounded-3xl p-5 text-left card-shadow border-b-8 border-rose-800 flex flex-col justify-between group h-44">
+          <div class="flex justify-between items-start">
+            <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-bold">Modulo 4</span>
+            <div class="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center text-xl group-hover:rotate-12 transition-transform">
+              <i class="fa-solid fa-puzzle-piece"></i>
+            </div>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold mb-1">Quiz e Intruso</h3>
+            <p class="text-rose-100 text-xs">Trova l'intruso e rispondi alle domande!</p>
+          </div>
+        </button>
+
+        <!-- Modulo 5: La Data Magica & Durata Mesi -->
+        <button onclick="startModule('dateAndDays')" class="bounce-hover bg-gradient-to-br from-purple-500 to-violet-600 text-white rounded-3xl p-5 text-left card-shadow border-b-8 border-violet-800 flex flex-col justify-between group h-44">
+          <div class="flex justify-between items-start">
+            <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-bold">Modulo 5</span>
+            <div class="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center text-xl group-hover:rotate-12 transition-transform">
+              <i class="fa-solid fa-calendar-days"></i>
+            </div>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold mb-1">Durata Mesi & Filastrocca 🗓️</h3>
+            <p class="text-purple-100 text-xs">Scopri quanti giorni ha ogni mese dell'anno!</p>
+          </div>
+        </button>
+
+        <!-- Modulo 6: Componi la Data -->
+        <button onclick="startModule('composeDate')" class="bounce-hover bg-gradient-to-br from-cyan-500 to-blue-600 text-white rounded-3xl p-5 text-left card-shadow border-b-8 border-blue-800 flex flex-col justify-between group h-44">
+          <div class="flex justify-between items-start">
+            <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-bold">Modulo 6</span>
+            <div class="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center text-xl group-hover:rotate-12 transition-transform">
+              <i class="fa-solid fa-pen-to-square"></i>
+            </div>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold mb-1">Componi la Data ✍️</h3>
+            <p class="text-cyan-100 text-xs">Converti il mese dal testo al suo numero GG/MM/AAAA!</p>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <!-- AREA DI GIOCO ATTIVA -->
+    <div id="view-game" class="hidden bg-white/95 backdrop-blur-md rounded-3xl p-5 sm:p-8 card-shadow border-4 border-slate-200 relative min-h-[420px] flex flex-col justify-between">
+      
+      <!-- Pulsante Indietro / Titolo Modulo -->
+      <div class="flex justify-between items-center mb-4 pb-3 border-b-2 border-slate-100">
+        <button onclick="goToMenu()" class="bounce-hover bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-2xl text-sm font-bold flex items-center gap-2">
+          <i class="fa-solid fa-arrow-left"></i> Menu
+        </button>
+        <span id="game-title" class="text-xs sm:text-sm font-bold text-slate-600 uppercase tracking-wide">Titolo Gioco</span>
+      </div>
+
+      <!-- Contenuto dinamico delle sfide -->
+      <div id="game-content" class="my-auto py-2">
+        <!-- Popolato dinamicamente via JavaScript -->
+      </div>
+
+      <!-- Area Messaggi e Feedback -->
+      <div id="feedback-msg" class="h-10 text-center font-bold text-base sm:text-lg mt-3 flex items-center justify-center transition-all"></div>
+    </div>
+
+  </main>
+
+  <!-- PIÈ DI PAGINA -->
+  <footer class="w-full max-w-4xl text-center py-3 text-slate-600 text-xs sm:text-sm font-medium">
+    <p>💡 <span class="font-bold">Regola:</span> Guadagni <span class="text-amber-600 font-bold">+10 punti</span> ad ogni risposta esatta. Con 3 errori le vite si azzerano e lo score riparte da 0!</p>
+  </footer>
+
+  <!-- DIALOGO POPUP FINE MODULO -->
+  <div id="modal-overlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full text-center card-shadow border-4 border-amber-300">
+      <div id="modal-icon" class="text-6xl mb-3">🎉</div>
+      <h3 id="modal-title" class="text-2xl sm:text-3xl font-extrabold text-slate-800 mb-2">Bravissimo!</h3>
+      <p id="modal-desc" class="text-slate-600 mb-6 text-sm sm:text-base font-medium">Hai completato tutte le sfide di questa sezione!</p>
+      <button onclick="closeModal()" class="bounce-hover w-full bg-amber-400 hover:bg-amber-500 text-slate-900 font-extrabold text-lg py-3 rounded-2xl border-b-4 border-amber-600 shadow-md">
+        Continua Gioco 🚀
+      </button>
+    </div>
+  </div>
+
+  <script>
+    /* ==========================================================================
+       DATI E STRUTTURE DEL GIOCO
+       ========================================================================== */
+    const DAYS = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica'];
+    
+    const SEASONS = {
+      primavera: { name: 'Primavera', icon: 'fa-seedling', color: 'bg-emerald-100 text-emerald-800 border-emerald-300 hover:bg-emerald-200' },
+      estate: { name: 'Estate', icon: 'fa-sun', color: 'bg-amber-100 text-amber-800 border-amber-300 hover:bg-amber-200' },
+      autunno: { name: 'Autunno', icon: 'fa-leaf', color: 'bg-orange-100 text-orange-800 border-orange-300 hover:bg-orange-200' },
+      inverno: { name: 'Inverno', icon: 'fa-snowflake', color: 'bg-sky-100 text-sky-800 border-sky-300 hover:bg-sky-200' }
+    };
+
+    const MONTHS = [
+      { num: '01', name: 'Gennaio', season: 'inverno', days: 31 },
+      { num: '02', name: 'Febbraio', season: 'inverno', days: 28 },
+      { num: '03', name: 'Marzo', season: 'primavera', days: 31 },
+      { num: '04', name: 'Aprile', season: 'primavera', days: 30 },
+      { num: '05', name: 'Maggio', season: 'primavera', days: 31 },
+      { num: '06', name: 'Giugno', season: 'estate', days: 30 },
+      { num: '07', name: 'Luglio', season: 'estate', days: 31 },
+      { num: '08', name: 'Agosto', season: 'estate', days: 31 },
+      { num: '09', name: 'Settembre', season: 'autunno', days: 30 },
+      { num: '10', name: 'Ottobre', season: 'autunno', days: 31 },
+      { num: '11', name: 'Novembre', season: 'autunno', days: 30 },
+      { num: '12', name: 'Dicembre', season: 'inverno', days: 31 }
+    ];
+
+    const DAYS_QUESTIONS = [
+      { q: "Qual è il primo giorno della settimana lavorativa?", options: ["Lunedì", "Domenica", "Venerdì"], answer: 0 },
+      { q: "Quale giorno viene subito dopo il Mercoledì?", options: ["Martedì", "Giovedì", "Venerdì"], answer: 1 },
+      { q: "Quale giorno viene subito prima della Domenica?", options: ["Venerdì", "Lunedì", "Sabato"], answer: 2 },
+      { q: "Quali sono i due giorni del fine settimana (Weekend)?", options: ["Sabato e Domenica", "Lunedì e Martedì", "Giovedì e Venerdì"], answer: 0 }
+    ];
+
+    const WORDS_TO_FILL = [
+      { full: 'LUNEDI', missing: [1, 5], hint: 'Primo giorno della settimana' },
+      { full: 'MARTEDI', missing: [2, 6], hint: 'Giorno della settimana' },
+      { full: 'GIOVEDI', missing: [1, 4], hint: 'Giorno prima del Venerdì' },
+      { full: 'DOMENICA', missing: [0, 4], hint: 'Giorno di festa nel weekend' },
+      { full: 'GENNAIO', missing: [2, 5], hint: 'Primo mese dell\'anno' },
+      { full: 'APRILE', missing: [1, 4], hint: 'Mese della primavera' },
+      { full: 'GIUGNO', missing: [3, 5], hint: 'Inizio delle vacanze estive' },
+      { full: 'AGOSTO', missing: [2, 4], hint: 'Mese caldo d\'estate' },
+      { full: 'OTTOBRE', missing: [2, 5], hint: 'Mese dell\'autunno' },
+      { full: 'DICEMBRE', missing: [1, 6], hint: 'Mese di Natale e dell\'inverno' }
+    ];
+
+    const QUIZ_QUESTIONS = [
+      { q: "Qual è il giorno che viene subito dopo il Giovedì?", options: ["Mercoledì", "Venerdì", "Sabato", "Domenica"], answer: 1 },
+      { q: "In quale stagione andiamo al mare e fa molto caldo?", options: ["Inverno", "Autunno", "Estate", "Primavera"], answer: 2 },
+      { q: "Quanti giorni ci sono in una settimana intera?", options: ["5 giorni", "10 giorni", "7 giorni", "12 giorni"], answer: 2 },
+      { q: "In quale stagione cadono le foglie e gli alberi cambiano colore?", options: ["Autunno", "Estate", "Primavera", "Inverno"], answer: 0 },
+      { q: "Trova L'INTRUSO! Quale di questi NON è un giorno della settimana?", options: ["Lunedì", "Agosto", "Venerdì", "Martedì"], answer: 1 },
+      { q: "Trova L'INTRUSO! Quale di questi NON è un mese?", options: ["Marzo", "Settembre", "Domenica", "Giugno"], answer: 2 },
+      { q: "In quale stagione nevischia e facciamo il pupazzo di neve?", options: ["Estate", "Inverno", "Primavera", "Autunno"], answer: 1 }
+    ];
+
+    const DATE_QUESTIONS = [
+      { q: "Qual è il numero del mese di GENNAIO?", options: ["01", "06", "12"], answer: 0 },
+      { q: "Qual è il numero del mese di OTTOBRE?", options: ["05", "10", "08"], answer: 1 },
+      { q: "Qual è il numero del mese di DICEMBRE?", options: ["01", "07", "12"], answer: 2 },
+      { q: "Quanti giorni ha il mese di NOVEMBRE? (Ricorda la rima: 'Trenta giorni ha Novembre...')", options: ["30 giorni", "31 giorni", "28 giorni"], answer: 0 },
+      { q: "Quanti giorni ha il mese di AGOSTO?", options: ["30 giorni", "31 giorni", "28 giorni"], answer: 1 },
+      { q: "Qual è il mese più corto dell'anno con soli 28 o 29 giorni?", options: ["Aprile", "Febbraio", "Maggio"], answer: 1 }
+    ];
+
+    const COMPOSE_DATE_QUESTIONS = [
+      { day: "12", monthName: "OTTOBRE", year: "2026", correctNum: "10", options: ["05", "10", "08"] },
+      { day: "25", monthName: "DICEMBRE", year: "2026", correctNum: "12", options: ["11", "12", "01"] },
+      { day: "01", monthName: "GENNAIO", year: "2026", correctNum: "01", options: ["01", "02", "06"] },
+      { day: "15", monthName: "AGOSTO", year: "2026", correctNum: "08", options: ["07", "08", "09"] },
+      { day: "21", monthName: "MARZO", year: "2026", correctNum: "03", options: ["03", "04", "05"] },
+      { day: "30", monthName: "GIUGNO", year: "2026", correctNum: "06", options: ["05", "06", "07"] }
+    ];
+
+    /* ==========================================================================
+       STATO DEL GIOCO
+       ========================================================================== */
+    let score = 0;
+    let lives = 3;
+    let currentModule = null;
+
+    let daysStep = 0;
+    let monthsShuffled = [];
+    let monthsStep = 0;
+    let fillWordIndex = 0;
+    let quizIndex = 0;
+    let dateIndex = 0;
+    let composeDateIndex = 0;
+
+    let fillWordState = {
+      word: [],
+      missingIndices: [],
+      userAnswers: {},
+      activeSlot: null
+    };
+
+    /* ==========================================================================
+       SISTEMA AUDIO WEB-AUDIO API (PROCEDURALE SENZA FILE ESTERNI)
+       ========================================================================== */
+    let audioCtx = null;
+    let isMusicPlaying = false;
+    let musicInterval = null;
+    let currentThemeIndex = 0;
+    let themeTimer = null;
+
+    function initAudio() {
+      if (!audioCtx) {
+        try {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          audioCtx = new AudioContextClass();
+        } catch (e) {
+          console.log("Audio API non supportata");
+        }
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    const MUSIC_THEMES = [
+      { tempo: 280, notes: [523.25, 587.33, 659.25, 783.99, 659.25, 587.33, 523.25, 659.25], type: 'sine' },
+      { tempo: 320, notes: [698.46, 659.25, 587.33, 523.25, 659.25, 783.99, 698.46, 587.33], type: 'triangle' },
+      { tempo: 250, notes: [587.33, 659.25, 783.99, 880.00, 783.99, 659.25, 783.99, 880.00], type: 'sine' }
+    ];
+
+    function toggleMusic() {
+      initAudio();
+      isMusicPlaying = !isMusicPlaying;
+      const icon = document.getElementById('music-icon');
+
+      if (isMusicPlaying) {
+        if (icon) icon.className = "fa-solid fa-volume-high text-amber-500 animate-pulse";
+        startBackgroundMusic();
+      } else {
+        if (icon) icon.className = "fa-solid fa-volume-xmark";
+        stopBackgroundMusic();
+      }
+    }
+
+    function startBackgroundMusic() {
+      stopBackgroundMusic();
+      let noteIndex = 0;
+
+      function playNextNote() {
+        if (!isMusicPlaying || !audioCtx) return;
+        const theme = MUSIC_THEMES[currentThemeIndex];
+        const freq = theme.notes[noteIndex % theme.notes.length];
+
+        if (freq) {
+          try {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = theme.type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+            gain.gain.setValueAtTime(0.015, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.22);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.22);
+          } catch(e) {}
+        }
+        noteIndex++;
+      }
+
+      musicInterval = setInterval(playNextNote, MUSIC_THEMES[currentThemeIndex].tempo);
+
+      if (!themeTimer) {
+        themeTimer = setInterval(() => {
+          currentThemeIndex = (currentThemeIndex + 1) % MUSIC_THEMES.length;
+          if (isMusicPlaying) startBackgroundMusic();
+        }, 120000); // Cambia melodia ogni 2 minuti
+      }
+    }
+
+    function stopBackgroundMusic() {
+      if (musicInterval) clearInterval(musicInterval);
+      musicInterval = null;
+    }
+
+    function playSound(type) {
+      initAudio();
+      if (!audioCtx) return;
+
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        const now = audioCtx.currentTime;
+
+        if (type === 'correct') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(523.25, now);
+          osc.frequency.setValueAtTime(659.25, now + 0.08);
+          osc.frequency.setValueAtTime(783.99, now + 0.16);
+          gain.gain.setValueAtTime(0.15, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+          osc.start(now);
+          osc.stop(now + 0.4);
+        } else if (type === 'error') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(220, now);
+          osc.frequency.setValueAtTime(164.81, now + 0.12);
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+          osc.start(now);
+          osc.stop(now + 0.35);
+        } else if (type === 'reset') {
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(300, now);
+          osc.frequency.linearRampToValueAtTime(100, now + 0.4);
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+          osc.start(now);
+          osc.stop(now + 0.4);
+        }
+      } catch(e) {}
+    }
+
+    /* ==========================================================================
+       GESTIONE SCHERMATE & PUNTEGGIO
+       ========================================================================== */
+    function goToMenu() {
+      document.getElementById('view-menu').classList.remove('hidden');
+      document.getElementById('view-game').classList.add('hidden');
+      currentModule = null;
+      clearFeedback();
+    }
+
+    function startModule(mod) {
+      initAudio();
+      currentModule = mod;
+      document.getElementById('view-menu').classList.add('hidden');
+      document.getElementById('view-game').classList.remove('hidden');
+      clearFeedback();
+
+      const titleEl = document.getElementById('game-title');
+
+      if (mod === 'days') {
+        if (titleEl) titleEl.innerText = "Modulo 1: I Giorni della Settimana";
+        daysStep = 0;
+        loadDaysChallenge();
+      } else if (mod === 'seasons') {
+        if (titleEl) titleEl.innerText = "Modulo 2: Mesi e Stagioni (Ordine Casuale)";
+        monthsStep = 0;
+        monthsShuffled = [...MONTHS].sort(() => Math.random() - 0.5);
+        loadSeasonsChallenge();
+      } else if (mod === 'fillWord') {
+        if (titleEl) titleEl.innerText = "Modulo 3: Completa la Parola 🔤";
+        fillWordIndex = 0;
+        loadFillWordChallenge();
+      } else if (mod === 'quiz') {
+        if (titleEl) titleEl.innerText = "Modulo 4: Quiz e Intruso";
+        quizIndex = 0;
+        loadQuizChallenge();
+      } else if (mod === 'dateAndDays') {
+        if (titleEl) titleEl.innerText = "Modulo 5: Durata dei Mesi & Filastrocca";
+        dateIndex = 0;
+        loadDateAndDaysChallenge();
+      } else if (mod === 'composeDate') {
+        if (titleEl) titleEl.innerText = "Modulo 6: Componi la Data (Mese → Numero)";
+        composeDateIndex = 0;
+        loadComposeDateChallenge();
+      }
+    }
+
+    function updateScore(points) {
+      score += points;
+      const scoreEl = document.getElementById('score-display');
+      if (scoreEl) {
+        scoreEl.innerText = score;
+        scoreEl.classList.add('animate-pulse-star');
+        setTimeout(() => scoreEl.classList.remove('animate-pulse-star'), 500);
+      }
+    }
+
+    function handleWrongAnswer() {
+      lives--;
+      playSound('error');
+      updateLivesUI();
+
+      if (lives <= 0) {
+        playSound('reset');
+        showModal('😢 Oh no! Vite finite!', 'Hai commesso 3 errori. Il tuo punteggio è stato azzerato, ma puoi riprovare subito!', '💔');
+        score = 0;
+        lives = 3;
+        const scoreEl = document.getElementById('score-display');
+        if (scoreEl) scoreEl.innerText = score;
+        updateLivesUI();
+        goToMenu();
+      } else {
+        showFeedback("Attenzione! Riprova bene! ❌", "text-rose-500", true);
+      }
+    }
+
+    function updateLivesUI() {
+      const container = document.getElementById('lives-container');
+      if (!container) return;
+      container.innerHTML = '';
+      for (let i = 0; i < 3; i++) {
+        if (i < lives) {
+          container.innerHTML += `<i class="fa-solid fa-heart"></i>`;
+        } else {
+          container.innerHTML += `<i class="fa-regular fa-heart text-slate-300"></i>`;
+        }
+      }
+    }
+
+    function showFeedback(text, colorClass = "text-emerald-600", shake = false) {
+      const fb = document.getElementById('feedback-msg');
+      if (!fb) return;
+      fb.innerText = text;
+      fb.className = `h-10 text-center font-bold text-base sm:text-lg mt-3 flex items-center justify-center transition-all ${colorClass} ${shake ? 'shake-err' : ''}`;
+    }
+
+    function clearFeedback() {
+      const fb = document.getElementById('feedback-msg');
+      if (fb) fb.innerText = '';
+    }
+
+    function triggerConfetti() {
+      if (typeof confetti === 'function') {
+        try {
+          confetti({ particleCount: 60, spread: 60, origin: { y: 0.6 } });
+        } catch(e) {}
+      }
+    }
+
+    function showModal(title, desc, icon = '🎉') {
+      const t = document.getElementById('modal-title');
+      const d = document.getElementById('modal-desc');
+      const i = document.getElementById('modal-icon');
+      const o = document.getElementById('modal-overlay');
+
+      if (t) t.innerText = title;
+      if (d) d.innerText = desc;
+      if (i) i.innerText = icon;
+      if (o) o.classList.remove('hidden');
+    }
+
+    function closeModal() {
+      const o = document.getElementById('modal-overlay');
+      if (o) o.classList.add('hidden');
+    }
+
+    /* ==========================================================================
+       MODULO 1: I GIORNI DELLA SETTIMANA
+       ========================================================================== */
+    function loadDaysChallenge() {
+      clearFeedback();
+      const container = document.getElementById('game-content');
+      if (!container) return;
+
+      if (daysStep < DAYS_QUESTIONS.length) {
+        const item = DAYS_QUESTIONS[daysStep];
+        container.innerHTML = `
+          <div class="space-y-5 text-center max-w-xl mx-auto">
+            <span class="bg-indigo-100 text-indigo-800 font-bold px-3 py-1 rounded-full text-xs inline-block">
+              Domanda ${daysStep + 1} di ${DAYS_QUESTIONS.length}
+            </span>
+            <h3 class="text-xl sm:text-2xl font-black text-slate-800">${item.q}</h3>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+              ${item.options.map((opt, idx) => `
+                <button onclick="checkDaysAnswer(${idx}, ${item.answer})" class="bounce-hover bg-indigo-50 hover:bg-indigo-500 hover:text-white border-2 border-indigo-200 text-indigo-900 font-extrabold text-lg py-4 px-3 rounded-2xl shadow-sm transition-all">
+                  ${opt}
+                </button>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      } else {
+        showModal("Bravissimo!", "Hai superato tutte le sfide sui giorni della settimana!");
+        goToMenu();
+      }
+    }
+
+    function checkDaysAnswer(selected, correct) {
+      if (selected === correct) {
+        playSound('correct');
+        updateScore(10);
+        triggerConfetti();
+        showFeedback("Esatto! Ottimo lavoro! +10 Punti 🎉");
+        setTimeout(() => {
+          daysStep++;
+          loadDaysChallenge();
+        }, 1200);
+      } else {
+        handleWrongAnswer();
+      }
+    }
+
+    /* ==========================================================================
+       MODULO 2: MESI E STAGIONI (RANDOM ORDER)
+       ========================================================================== */
+    function loadSeasonsChallenge() {
+      clearFeedback();
+      const container = document.getElementById('game-content');
+      if (!container) return;
+
+      if (monthsStep < monthsShuffled.length) {
+        const month = monthsShuffled[monthsStep];
+        container.innerHTML = `
+          <div class="space-y-6 text-center max-w-xl mx-auto">
+            <span class="bg-teal-100 text-teal-800 font-bold px-3 py-1 rounded-full text-xs inline-block">
+              Mese ${monthsStep + 1} di ${monthsShuffled.length}
+            </span>
+
+            <div class="bg-teal-50 border-2 border-teal-200 rounded-3xl p-6 shadow-inner">
+              <p class="text-xs font-bold text-teal-600 uppercase mb-1">A quale stagione appartiene?</p>
+              <h3 class="text-3xl sm:text-4xl font-black text-slate-800">${month.name}</h3>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              ${Object.keys(SEASONS).map(sKey => {
+                const s = SEASONS[sKey];
+                return `
+                  <button onclick="checkSeasonAnswer('${sKey}', '${month.season}')" class="bounce-hover ${s.color} border-2 rounded-2xl p-4 flex flex-col items-center justify-center gap-2 shadow-sm font-extrabold text-base sm:text-lg">
+                    <i class="fa-solid ${s.icon} text-2xl"></i>
+                    <span>${s.name}</span>
+                  </button>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+      } else {
+        showModal("Fantastico!", "Hai abbinato correttamente tutti i mesi alle loro stagioni!");
+        goToMenu();
+      }
+    }
+
+    function checkSeasonAnswer(selected, correct) {
+      if (selected === correct) {
+        playSound('correct');
+        updateScore(10);
+        triggerConfetti();
+        showFeedback("Corretto! +10 Punti 🌸☀️🍁❄️");
+        setTimeout(() => {
+          monthsStep++;
+          loadSeasonsChallenge();
+        }, 1200);
+      } else {
+        handleWrongAnswer();
+      }
+    }
+
+    /* ==========================================================================
+       MODULO 3: COMPLETA LA PAROLA
+       ========================================================================== */
+    function loadFillWordChallenge() {
+      clearFeedback();
+      const container = document.getElementById('game-content');
+      if (!container) return;
+
+      if (fillWordIndex < WORDS_TO_FILL.length) {
+        const item = WORDS_TO_FILL[fillWordIndex];
+        const wordArr = item.full.toUpperCase().split('');
+
+        fillWordState = {
+          word: wordArr,
+          missingIndices: item.missing,
+          userAnswers: {},
+          activeSlot: item.missing[0]
+        };
+
+        const alphabet = "ABCDEFGHILMNOPQRSTUVZ".split('');
+
+        container.innerHTML = `
+          <div class="text-center space-y-5 max-w-xl mx-auto">
+            <div class="flex justify-between items-center text-xs font-bold">
+              <span class="bg-amber-100 text-amber-800 px-3 py-1 rounded-full">
+                Parola ${fillWordIndex + 1} di ${WORDS_TO_FILL.length}
+              </span>
+              <span class="text-slate-500">💡 indizio: ${item.hint}</span>
+            </div>
+
+            <h3 class="text-lg sm:text-xl font-bold text-slate-800">Trova le lettere mancanti!</h3>
+
+            <!-- Parola con spazi vuoti -->
+            <div class="flex justify-center items-center gap-2 py-2 flex-wrap">
+              ${wordArr.map((letter, idx) => {
+                const isMissing = item.missing.includes(idx);
+                if (isMissing) {
+                  return `
+                    <button id="slot-${idx}" onclick="setActiveSlot(${idx})" class="w-10 h-12 sm:w-12 sm:h-14 bg-amber-100 border-4 border-amber-400 rounded-2xl flex items-center justify-center text-xl sm:text-2xl font-black text-amber-900 shadow-inner">
+                      _
+                    </button>
+                  `;
+                } else {
+                  return `
+                    <div class="w-10 h-12 sm:w-12 sm:h-14 bg-slate-100 border-2 border-slate-300 rounded-2xl flex items-center justify-center text-xl sm:text-2xl font-black text-slate-700">
+                      ${letter}
+                    </div>
+                  `;
+                }
+              }).join('')}
+            </div>
+
+            <!-- Tastiera a schermo -->
+            <div class="bg-slate-50 p-3 rounded-2xl border-2 border-slate-200">
+              <p class="text-[11px] font-bold text-slate-400 uppercase mb-2">Seleziona una lettera:</p>
+              <div class="flex flex-wrap gap-1 justify-center">
+                ${alphabet.map(lettr => `
+                  <button onclick="pressLetter('${lettr}')" class="bounce-hover bg-white hover:bg-amber-400 hover:text-white border-2 border-slate-200 text-slate-800 font-extrabold w-8 h-9 sm:w-10 sm:h-11 rounded-xl shadow-sm text-sm sm:text-base">
+                    ${lettr}
+                  </button>
+                `).join('')}
+              </div>
+            </div>
+
+            <button onclick="checkFillWordAnswer()" class="bounce-hover bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold px-6 py-2.5 rounded-2xl text-base shadow-md">
+              Verifica Parola ✔️
+            </button>
+          </div>
+        `;
+
+        setActiveSlot(item.missing[0]);
+
+      } else {
+        showModal("Bravissimo!", "Hai completato tutte le parole con successo!");
+        goToMenu();
+      }
+    }
+
+    function setActiveSlot(idx) {
+      fillWordState.activeSlot = idx;
+      fillWordState.missingIndices.forEach(i => {
+        const slotEl = document.getElementById(`slot-${i}`);
+        if (slotEl) {
+          if (i === idx) {
+            slotEl.className = "w-10 h-12 sm:w-12 sm:h-14 bg-amber-300 border-4 border-amber-500 rounded-2xl flex items-center justify-center text-xl sm:text-2xl font-black text-amber-950 shadow-md ring-2 ring-amber-300";
+          } else {
+            slotEl.className = "w-10 h-12 sm:w-12 sm:h-14 bg-amber-100 border-4 border-amber-400 rounded-2xl flex items-center justify-center text-xl sm:text-2xl font-black text-amber-900 shadow-inner";
+          }
+        }
+      });
+    }
+
+    function pressLetter(letter) {
+      const slotIdx = fillWordState.activeSlot;
+      if (slotIdx === null || slotIdx === undefined) return;
+
+      fillWordState.userAnswers[slotIdx] = letter;
+      const slotEl = document.getElementById(`slot-${slotIdx}`);
+      if (slotEl) slotEl.innerText = letter;
+
+      const nextEmpty = fillWordState.missingIndices.find(i => !fillWordState.userAnswers[i]);
+      if (nextEmpty !== undefined) {
+        setActiveSlot(nextEmpty);
+      }
+    }
+
+    function checkFillWordAnswer() {
+      const allFilled = fillWordState.missingIndices.every(i => fillWordState.userAnswers[i]);
+      if (!allFilled) {
+        showFeedback("Riempi tutti i buchi prima di verificare!", "text-amber-600");
+        return;
+      }
+
+      let isCorrect = true;
+      fillWordState.missingIndices.forEach(i => {
+        if (fillWordState.userAnswers[i] !== fillWordState.word[i]) {
+          isCorrect = false;
+        }
+      });
+
+      if (isCorrect) {
+        playSound('correct');
+        updateScore(10);
+        triggerConfetti();
+        showFeedback("Bravissimo! Parola completata! +10 Punti 🎉");
+        setTimeout(() => {
+          fillWordIndex++;
+          loadFillWordChallenge();
+        }, 1200);
+      } else {
+        handleWrongAnswer();
+      }
+    }
+
+    /* ==========================================================================
+       MODULO 4: QUIZ E INTRUSO
+       ========================================================================== */
+    function loadQuizChallenge() {
+      clearFeedback();
+      const container = document.getElementById('game-content');
+      if (!container) return;
+
+      if (quizIndex < QUIZ_QUESTIONS.length) {
+        const qData = QUIZ_QUESTIONS[quizIndex];
+
+        container.innerHTML = `
+          <div class="space-y-5 text-center max-w-xl mx-auto">
+            <span class="bg-rose-100 text-rose-800 font-bold px-3 py-1 rounded-full text-xs inline-block">
+              Domanda ${quizIndex + 1} di ${QUIZ_QUESTIONS.length}
+            </span>
+
+            <div class="bg-rose-50 border-2 border-rose-200 rounded-3xl p-5 shadow-inner">
+              <h3 class="text-lg sm:text-xl font-black text-rose-950">${qData.q}</h3>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              ${qData.options.map((opt, idx) => `
+                <button onclick="checkQuizAnswer(${idx}, ${qData.answer})" class="bounce-hover bg-white hover:bg-rose-50 border-2 border-slate-200 hover:border-rose-400 text-slate-800 font-extrabold text-base sm:text-lg p-3.5 rounded-2xl shadow-sm text-left flex items-center justify-between">
+                  <span>${opt}</span>
+                  <i class="fa-solid fa-chevron-right text-rose-300"></i>
+                </button>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      } else {
+        showModal("Campione del Quiz!", "Hai risposto a tutti i quiz ed i quesiti sull'intruso!");
+        goToMenu();
+      }
+    }
+
+    function checkQuizAnswer(selected, correct) {
+      if (selected === correct) {
+        playSound('correct');
+        updateScore(10);
+        triggerConfetti();
+        showFeedback("Ottimo! Risposta Esatta! +10 Punti 🏆");
+        setTimeout(() => {
+          quizIndex++;
+          loadQuizChallenge();
+        }, 1200);
+      } else {
+        handleWrongAnswer();
+      }
+    }
+
+    /* ==========================================================================
+       MODULO 5: DURATA DEI MESI & FILASTROCCA
+       ========================================================================== */
+    function loadDateAndDaysChallenge() {
+      clearFeedback();
+      const container = document.getElementById('game-content');
+      if (!container) return;
+
+      if (dateIndex < DATE_QUESTIONS.length) {
+        const item = DATE_QUESTIONS[dateIndex];
+
+        container.innerHTML = `
+          <div class="space-y-5 text-center max-w-xl mx-auto">
+            <span class="bg-purple-100 text-purple-800 font-bold px-3 py-1 rounded-full text-xs inline-block">
+              Sfida ${dateIndex + 1} di ${DATE_QUESTIONS.length}
+            </span>
+
+            <!-- Filastrocca Informativa dei Giorni -->
+            <div class="bg-amber-50 border-2 border-amber-200 rounded-2xl p-3 text-xs sm:text-sm text-amber-900 font-semibold shadow-sm">
+              📜 <i>"Trenta giorni ha Novembre, con Aprile, Giugno e Settembre. Di ventotto ce n'è uno, tutti gli altri ne han trentuno!"</i>
+            </div>
+
+            <div class="bg-purple-50 border-2 border-purple-200 rounded-3xl p-5 shadow-inner">
+              <h3 class="text-lg sm:text-xl font-black text-purple-950">${item.q}</h3>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              ${item.options.map((opt, idx) => `
+                <button onclick="checkDateAnswer(${idx}, ${item.answer})" class="bounce-hover bg-white hover:bg-purple-500 hover:text-white border-2 border-purple-200 text-purple-900 font-extrabold text-lg py-4 px-3 rounded-2xl shadow-sm transition-all">
+                  ${opt}
+                </button>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      } else {
+        showModal("Maestro delle Date!", "Ora sai quanti giorni ha ogni mese dell'anno!");
+        goToMenu();
+      }
+    }
+
+    function checkDateAnswer(selected, correct) {
+      if (selected === correct) {
+        playSound('correct');
+        updateScore(10);
+        triggerConfetti();
+        showFeedback("Esatto! Sei un vero esperto! +10 Punti 🗓️");
+        setTimeout(() => {
+          dateIndex++;
+          loadDateAndDaysChallenge();
+        }, 1200);
+      } else {
+        handleWrongAnswer();
+      }
+    }
+
+    /* ==========================================================================
+       MODULO 6: COMPONI LA DATA (Mese per esteso -> Numero)
+       ========================================================================== */
+    function loadComposeDateChallenge() {
+      clearFeedback();
+      const container = document.getElementById('game-content');
+      if (!container) return;
+
+      if (composeDateIndex < COMPOSE_DATE_QUESTIONS.length) {
+        const item = COMPOSE_DATE_QUESTIONS[composeDateIndex];
+
+        container.innerHTML = `
+          <div class="space-y-6 text-center max-w-xl mx-auto">
+            <span class="bg-cyan-100 text-cyan-800 font-bold px-3 py-1 rounded-full text-xs inline-block">
+              Data ${composeDateIndex + 1} di ${COMPOSE_DATE_QUESTIONS.length}
+            </span>
+
+            <div class="bg-cyan-50 border-2 border-cyan-200 rounded-3xl p-5 shadow-inner space-y-2">
+              <p class="text-xs font-bold text-cyan-700 uppercase">Qual è il numero del mese indicato?</p>
+              <h3 class="text-3xl font-black text-cyan-900">${item.monthName}</h3>
+            </div>
+
+            <!-- Visualizzazione Formato Data GG / MM / AAAA -->
+            <div class="flex justify-center items-center gap-3 text-2xl sm:text-3xl font-black text-slate-800 bg-slate-50 p-4 rounded-2xl border-2 border-slate-200 shadow-sm">
+              <span class="bg-white px-3 py-1.5 rounded-xl border border-slate-300">${item.day}</span>
+              <span class="text-slate-400">/</span>
+              <span id="month-target-box" class="bg-cyan-200 text-cyan-900 border-2 border-cyan-400 border-dashed px-4 py-1.5 rounded-xl animate-pulse">__</span>
+              <span class="text-slate-400">/</span>
+              <span class="bg-white px-3 py-1.5 rounded-xl border border-slate-300">${item.year}</span>
+            </div>
+
+            <div class="grid grid-cols-3 gap-3">
+              ${item.options.map((opt) => `
+                <button onclick="checkComposeDateAnswer('${opt}', '${item.correctNum}')" class="bounce-hover bg-white hover:bg-cyan-500 hover:text-white border-2 border-cyan-200 text-cyan-900 font-extrabold text-xl sm:text-2xl py-4 rounded-2xl shadow-sm transition-all">
+                  ${opt}
+                </button>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      } else {
+        showModal("Bravissimo!", "Hai imparato a comporre perfettamente le date nel formato GG/MM/AAAA!");
+        goToMenu();
+      }
+    }
+
+    function checkComposeDateAnswer(selected, correct) {
+      if (selected === correct) {
+        const box = document.getElementById('month-target-box');
+        if (box) {
+          box.innerText = selected;
+          box.className = "bg-emerald-300 text-emerald-950 border-2 border-emerald-500 px-4 py-1.5 rounded-xl font-black";
+        }
+        playSound('correct');
+        updateScore(10);
+        triggerConfetti();
+        showFeedback("Ottimo! Data completata correttamente! +10 Punti ✍️");
+        setTimeout(() => {
+          composeDateIndex++;
+          loadComposeDateChallenge();
+        }, 1200);
+      } else {
+        handleWrongAnswer();
+      }
+    }
+
+    // Inizializza l'UI al caricamento
+    window.onload = function() {
+      updateLivesUI();
+    };
+  </script>
+</body>
+</html>
