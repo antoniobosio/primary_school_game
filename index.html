@@ -22,10 +22,9 @@
       background: linear-gradient(135deg, #e0f2fe 0%, #fef3c7 50%, #fce7f3 100%);
       min-height: 100vh;
       user-select: none;
-      -webkit-tap-highlight-color: transparent; /* Rimuove evidenziazione al tap su iOS */
+      -webkit-tap-highlight-color: transparent;
     }
 
-    /* Gestione dinamica degli effetti Hover: attiva solo su dispositivi con mouse */
     @media (hover: hover) {
       .bounce-hover:hover {
         transform: translateY(-3px) scale(1.02);
@@ -60,6 +59,26 @@
     .shake-err {
       animation: shake 0.4s ease-in-out;
     }
+
+    /* Animazione Razzo Spaziale */
+    @keyframes rocket-launch {
+      0% { transform: translateY(100vh) scale(0.6); opacity: 0; }
+      20% { opacity: 1; }
+      80% { opacity: 1; }
+      100% { transform: translateY(-120vh) scale(1.4); opacity: 0; }
+    }
+    .animate-rocket {
+      animation: rocket-launch 2.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    }
+
+    /* Animazione Nuvole Fumo Razzo */
+    @keyframes smoke-puff {
+      0% { transform: scale(0.5) translateY(0); opacity: 0.8; }
+      100% { transform: scale(3) translateY(40px); opacity: 0; }
+    }
+    .smoke-cloud {
+      animation: smoke-puff 1.8s ease-out forwards;
+    }
   </style>
 </head>
 <body class="p-3 sm:p-6 flex flex-col items-center justify-between min-h-screen">
@@ -80,7 +99,7 @@
     <!-- Punteggio e Vite -->
     <div class="flex items-center gap-3 sm:gap-6 ml-auto">
       <!-- Pulsante Musica Audio -->
-      <button id="music-btn" onclick="toggleMusic()" title="Attiva/Disattiva Musica" class="bounce-hover bg-slate-100 hover:bg-slate-200 text-slate-700 w-11 h-11 rounded-2xl flex items-center justify-center text-xl border-2 border-slate-300 shadow-sm">
+      <button id="music-btn" onclick="toggleMusic()" title="Attiva/Disattiva Musica" class="bounce-hover bg-slate-100 hover:bg-slate-200 text-slate-700 w-11 h-11 rounded-2xl flex items-center justify-center text-xl border-2 border-slate-300 shadow-sm focus:outline-none">
         <i class="fa-solid fa-volume-xmark" id="music-icon"></i>
       </button>
 
@@ -94,14 +113,16 @@
         </div>
       </div>
 
-      <!-- Punteggio -->
-      <div class="bg-amber-100 px-3 py-1.5 sm:px-4 sm:py-2 rounded-2xl border-2 border-amber-300 flex items-center gap-2">
-        <i class="fa-solid fa-star text-amber-500 text-xl sm:text-2xl"></i>
-        <div>
-          <div class="text-[10px] sm:text-xs font-bold text-amber-700 uppercase tracking-wider">Punti</div>
+      <!-- Punteggio (Cliccabile per Effetto Razzo) -->
+      <button onclick="triggerScoreRocket()" title="Clicca per la sorpresa!" class="bounce-hover bg-gradient-to-r from-amber-100 to-amber-200 px-3 py-1.5 sm:px-4 sm:py-2 rounded-2xl border-2 border-amber-400 flex items-center gap-2 shadow-sm focus:outline-none relative group cursor-pointer">
+        <i class="fa-solid fa-star text-amber-500 text-xl sm:text-2xl animate-bounce"></i>
+        <div class="text-left">
+          <div class="text-[9px] sm:text-[10px] font-extrabold text-amber-800 uppercase tracking-wider flex items-center gap-1">
+            <span>Punti</span> <span class="text-amber-600 font-normal text-[8px]">👆 Cliccami!</span>
+          </div>
           <div id="score-display" class="text-xl sm:text-2xl font-black text-amber-600 leading-none">0</div>
         </div>
-      </div>
+      </button>
     </div>
   </header>
 
@@ -117,7 +138,7 @@
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <!-- Modulo 1: I Giorni -->
-        <button onclick="startModule('days')" class="bounce-hover bg-gradient-to-br from-indigo-500 to-indigo-600 text-white rounded-3xl p-5 text-left card-shadow border-b-8 border-indigo-800 flex flex-col justify-between group h-44">
+        <button onclick="startModule('days')" class="bounce-hover bg-gradient-to-br from-indigo-500 to-indigo-600 text-white rounded-3xl p-5 text-left card-shadow border-b-8 border-indigo-800 flex flex-col justify-between group h-44 focus:outline-none">
           <div class="flex justify-between items-start">
             <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-bold">Modulo 1</span>
             <div class="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center text-xl group-hover:rotate-12 transition-transform">
@@ -131,7 +152,7 @@
         </button>
 
         <!-- Modulo 2: Mesi e Stagioni -->
-        <button onclick="startModule('seasons')" class="bounce-hover bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-3xl p-5 text-left card-shadow border-b-8 border-teal-800 flex flex-col justify-between group h-44">
+        <button onclick="startModule('seasons')" class="bounce-hover bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-3xl p-5 text-left card-shadow border-b-8 border-teal-800 flex flex-col justify-between group h-44 focus:outline-none">
           <div class="flex justify-between items-start">
             <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-bold">Modulo 2</span>
             <div class="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center text-xl group-hover:rotate-12 transition-transform">
@@ -145,7 +166,7 @@
         </button>
 
         <!-- Modulo 3: Completa la Parola -->
-        <button onclick="startModule('fillWord')" class="bounce-hover bg-gradient-to-br from-amber-500 to-orange-500 text-white rounded-3xl p-5 text-left card-shadow border-b-8 border-orange-700 flex flex-col justify-between group h-44">
+        <button onclick="startModule('fillWord')" class="bounce-hover bg-gradient-to-br from-amber-500 to-orange-500 text-white rounded-3xl p-5 text-left card-shadow border-b-8 border-orange-700 flex flex-col justify-between group h-44 focus:outline-none">
           <div class="flex justify-between items-start">
             <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-bold">Modulo 3</span>
             <div class="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center text-xl group-hover:rotate-12 transition-transform">
@@ -159,7 +180,7 @@
         </button>
 
         <!-- Modulo 4: Quiz e Intruso -->
-        <button onclick="startModule('quiz')" class="bounce-hover bg-gradient-to-br from-rose-500 to-pink-600 text-white rounded-3xl p-5 text-left card-shadow border-b-8 border-rose-800 flex flex-col justify-between group h-44">
+        <button onclick="startModule('quiz')" class="bounce-hover bg-gradient-to-br from-rose-500 to-pink-600 text-white rounded-3xl p-5 text-left card-shadow border-b-8 border-rose-800 flex flex-col justify-between group h-44 focus:outline-none">
           <div class="flex justify-between items-start">
             <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-bold">Modulo 4</span>
             <div class="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center text-xl group-hover:rotate-12 transition-transform">
@@ -173,7 +194,7 @@
         </button>
 
         <!-- Modulo 5: La Data Magica & Durata Mesi -->
-        <button onclick="startModule('dateAndDays')" class="bounce-hover bg-gradient-to-br from-purple-500 to-violet-600 text-white rounded-3xl p-5 text-left card-shadow border-b-8 border-violet-800 flex flex-col justify-between group h-44">
+        <button onclick="startModule('dateAndDays')" class="bounce-hover bg-gradient-to-br from-purple-500 to-violet-600 text-white rounded-3xl p-5 text-left card-shadow border-b-8 border-violet-800 flex flex-col justify-between group h-44 focus:outline-none">
           <div class="flex justify-between items-start">
             <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-bold">Modulo 5</span>
             <div class="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center text-xl group-hover:rotate-12 transition-transform">
@@ -187,7 +208,7 @@
         </button>
 
         <!-- Modulo 6: Componi la Data -->
-        <button onclick="startModule('composeDate')" class="bounce-hover bg-gradient-to-br from-cyan-500 to-blue-600 text-white rounded-3xl p-5 text-left card-shadow border-b-8 border-blue-800 flex flex-col justify-between group h-44">
+        <button onclick="startModule('composeDate')" class="bounce-hover bg-gradient-to-br from-cyan-500 to-blue-600 text-white rounded-3xl p-5 text-left card-shadow border-b-8 border-blue-800 flex flex-col justify-between group h-44 focus:outline-none">
           <div class="flex justify-between items-start">
             <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-bold">Modulo 6</span>
             <div class="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center text-xl group-hover:rotate-12 transition-transform">
@@ -207,7 +228,7 @@
       
       <!-- Pulsante Indietro / Titolo Modulo -->
       <div class="flex justify-between items-center mb-4 pb-3 border-b-2 border-slate-100">
-        <button onclick="goToMenu()" class="bounce-hover bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-2xl text-sm font-bold flex items-center gap-2">
+        <button onclick="goToMenu()" class="bounce-hover bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-2xl text-sm font-bold flex items-center gap-2 focus:outline-none">
           <i class="fa-solid fa-arrow-left"></i> Menu
         </button>
         <span id="game-title" class="text-xs sm:text-sm font-bold text-slate-600 uppercase tracking-wide">Titolo Gioco</span>
@@ -229,13 +250,51 @@
     <p>💡 <span class="font-bold">Regola:</span> Guadagni <span class="text-amber-600 font-bold">+10 punti</span> ad ogni risposta esatta. Con 3 errori le vite si azzerano e lo score riparte da 0!</p>
   </footer>
 
+  <!-- OVERLAY ANIMAZIONE RAZZO & PUNTEGGIO MAGICO -->
+  <div id="rocket-overlay" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md hidden flex flex-col items-center justify-center p-6 z-50 overflow-hidden">
+    
+    <!-- Elementi fumo e razzo -->
+    <div id="rocket-container" class="absolute inset-0 pointer-events-none flex items-center justify-center">
+      <div id="rocket-element" class="text-7xl sm:text-9xl absolute bottom-0 text-amber-400 drop-shadow-[0_0_35px_rgba(251,191,36,0.8)]">
+        🚀
+      </div>
+    </div>
+
+    <!-- Scheda Centrale con Conteggio Veloce -->
+    <div class="bg-gradient-to-b from-indigo-900 via-purple-900 to-slate-900 rounded-3xl p-6 sm:p-10 max-w-lg w-full text-center border-4 border-amber-400 shadow-2xl relative z-10 space-y-4">
+      <div class="inline-block bg-amber-400 text-slate-900 px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest shadow-md">
+        🌟 Super Traguardo! 🌟
+      </div>
+      
+      <!-- Display Punti Animato -->
+      <div class="py-2">
+        <div id="rocket-score-counter" class="text-6xl sm:text-8xl font-black text-amber-400 drop-shadow-[0_0_20px_rgba(251,191,36,0.6)] leading-none">
+          0
+        </div>
+        <p class="text-amber-200 font-bold text-sm sm:text-base mt-2">Punti Guadagnati!</p>
+      </div>
+
+      <!-- Frase Motivazionale -->
+      <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/20">
+        <h4 id="rocket-quote" class="text-xl sm:text-2xl font-extrabold text-white">
+          Stai andando alla grande! Continua così! 🚀
+        </h4>
+      </div>
+
+      <!-- Pulsante di chiusura -->
+      <button onclick="closeRocketOverlay()" class="bounce-hover w-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-slate-950 font-black text-lg sm:text-xl py-3.5 rounded-2xl border-b-4 border-amber-700 shadow-lg focus:outline-none">
+        Continua l'Avventura 🌟
+      </button>
+    </div>
+  </div>
+
   <!-- DIALOGO POPUP FINE MODULO -->
   <div id="modal-overlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full text-center card-shadow border-4 border-amber-300">
       <div id="modal-icon" class="text-6xl mb-3">🎉</div>
       <h3 id="modal-title" class="text-2xl sm:text-3xl font-extrabold text-slate-800 mb-2">Bravissimo!</h3>
       <p id="modal-desc" class="text-slate-600 mb-6 text-sm sm:text-base font-medium">Hai completato tutte le sfide di questa sezione!</p>
-      <button onclick="closeModal()" class="bounce-hover w-full bg-amber-400 hover:bg-amber-500 text-slate-900 font-extrabold text-lg py-3 rounded-2xl border-b-4 border-amber-600 shadow-md">
+      <button onclick="closeModal()" class="bounce-hover w-full bg-amber-400 hover:bg-amber-500 text-slate-900 font-extrabold text-lg py-3 rounded-2xl border-b-4 border-amber-600 shadow-md focus:outline-none">
         Continua Gioco 🚀
       </button>
     </div>
@@ -315,6 +374,15 @@
       { day: "15", monthName: "AGOSTO", year: "2026", correctNum: "08", options: ["07", "08", "09"] },
       { day: "21", monthName: "MARZO", year: "2026", correctNum: "03", options: ["03", "04", "05"] },
       { day: "30", monthName: "GIUGNO", year: "2026", correctNum: "06", options: ["05", "06", "07"] }
+    ];
+
+    const MOTIVATIONAL_QUOTES = [
+      "Stai andando alla grande! Continua così! 🚀",
+      "Sei un vero campione del tempo! ⭐",
+      "Mamma mia, quante risposte esatte! 🎉",
+      "Il tuo cervello viaggia alla velocità della luce! ⚡",
+      "Super fantastico! Nessuno ti fermerà! 🌟",
+      "Sei pronto per volare nello spazio del tempo! 🌌"
     ];
 
     /* ==========================================================================
@@ -462,8 +530,67 @@
           gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
           osc.start(now);
           osc.stop(now + 0.4);
+        } else if (type === 'rocket') {
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(150, now);
+          osc.frequency.exponentialRampToValueAtTime(800, now + 1.5);
+          gain.gain.setValueAtTime(0.25, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 1.8);
+          osc.start(now);
+          osc.stop(now + 1.8);
         }
       } catch(e) {}
+    }
+
+    /* ==========================================================================
+       ANIMAZIONE RAZZO & PUNTEGGIO MAGICO (QUANDO SI CLICCA SUL PUNTEGGIO)
+       ========================================================================== */
+    function triggerScoreRocket() {
+      initAudio();
+      const overlay = document.getElementById('rocket-overlay');
+      const rocket = document.getElementById('rocket-element');
+      const counterEl = document.getElementById('rocket-score-counter');
+      const quoteEl = document.getElementById('rocket-quote');
+
+      if (!overlay || !rocket || !counterEl) return;
+
+      // Imposta la frase motivazionale casuale
+      const randomQuote = MOTIVATIONAL_QUOTES[Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length)];
+      if (quoteEl) quoteEl.innerText = randomQuote;
+
+      // Resetta le classi dell'animazione
+      rocket.classList.remove('animate-rocket');
+      void rocket.offsetWidth; // Force Reflow
+      rocket.classList.add('animate-rocket');
+
+      overlay.classList.remove('hidden');
+      playSound('rocket');
+
+      // Animazione coriandoli esplosivi
+      triggerConfetti();
+      setTimeout(() => triggerConfetti(), 800);
+
+      // Scorrimento veloce dei numeri da 0 al valore attuale
+      let currentCount = 0;
+      const targetScore = score;
+      const stepTime = Math.max(20, Math.floor(1200 / (targetScore || 1)));
+
+      counterEl.innerText = '0';
+      const counterInterval = setInterval(() => {
+        if (currentCount < targetScore) {
+          currentCount += 1;
+          counterEl.innerText = currentCount;
+          playSound('correct');
+        } else {
+          counterEl.innerText = targetScore;
+          clearInterval(counterInterval);
+        }
+      }, stepTime);
+    }
+
+    function closeRocketOverlay() {
+      const overlay = document.getElementById('rocket-overlay');
+      if (overlay) overlay.classList.add('hidden');
     }
 
     /* ==========================================================================
@@ -625,7 +752,7 @@
     }
 
     function checkDaysAnswer(btn, selected, correct) {
-      if (btn) btn.blur(); // Rimuove il focus dal pulsante su mobile e iPad
+      if (btn) btn.blur();
 
       if (selected === correct) {
         playSound('correct');
@@ -633,7 +760,7 @@
         triggerConfetti();
         showFeedback("Esatto! Ottimo lavoro! +10 Punti 🎉");
         setTimeout(() => {
-          if (document.activeElement) document.activeElement.blur(); // Rimuove residui touch focus su iOS
+          if (document.activeElement) document.activeElement.blur();
           daysStep++;
           loadDaysChallenge();
         }, 1200);
